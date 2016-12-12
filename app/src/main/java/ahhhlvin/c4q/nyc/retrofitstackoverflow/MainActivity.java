@@ -2,15 +2,15 @@ package ahhhlvin.c4q.nyc.retrofitstackoverflow;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.AdapterView;
-import android.widget.ListView;
 
 import java.util.ArrayList;
 
@@ -23,8 +23,8 @@ import retrofit.http.Query;
 
 public class MainActivity extends AppCompatActivity implements StackOverflowAPI {
 
-    ListView listView;
-    ListViewAdapter questionsAdapter;
+    RecyclerView questionReyclerView;
+    QuestionViewAdapter questionViewAdapter;
     ArrayList<Question> questionsList;
 
     @Override
@@ -34,26 +34,29 @@ public class MainActivity extends AppCompatActivity implements StackOverflowAPI 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        listView = (ListView) findViewById(R.id.list_view);
+        questionReyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        questionReyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+        // SETTING CLICK LISTENER FOR LISTVIEW IMPLEMENTATION
 
-                if(questionsAdapter.getCount() > 0) {
-                    Intent webViewIntent = new Intent(getApplicationContext(), WebViewActivity.class);
-                    webViewIntent.putExtra("question_link", questionsList.get(i).getLink());
-                    startActivity(webViewIntent);
-                }
-            }
-        });
+//        questionReyclerView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+//
+//                if(questionViewAdapter.getCount() > 0) {
+//                    Intent webViewIntent = new Intent(getApplicationContext(), WebViewActivity.class);
+//                    webViewIntent.putExtra("question_link", questionsList.get(i).getLink());
+//                    startActivity(webViewIntent);
+//                }
+//            }
+//        });
 
         questionsList = new ArrayList<>();
 
-        questionsAdapter =
-                new ListViewAdapter(this, questionsList);
-        
-        listView.setAdapter(questionsAdapter);
+        questionViewAdapter =
+                new QuestionViewAdapter(this, questionsList);
+
+        questionReyclerView.setAdapter(questionViewAdapter);
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.stackexchange.com")
@@ -70,10 +73,11 @@ public class MainActivity extends AppCompatActivity implements StackOverflowAPI 
             @Override
             public void onResponse(Response<StackOverflowQuestions> response, Retrofit retrofit) {
                 Log.i("RETROFIT REQUEST", "SUCCESS");
+                Log.i("RETROFIT REQUEST", response.toString());
                 System.out.println();
                 questionsList.clear();
                 questionsList.addAll(response.body().items);
-                questionsAdapter.notifyDataSetChanged();
+                questionViewAdapter.notifyDataSetChanged();
             }
 
             @Override
